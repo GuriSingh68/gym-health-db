@@ -1,9 +1,15 @@
 package egen5208.gym.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import egen5208.gym.dto.User.UserRequestDTO;
+import egen5208.gym.dto.User.UserUpdateDTO;
+import egen5208.gym.exception.NotAdminException;
+import egen5208.gym.exception.UserAlreadyExistsException;
 import egen5208.gym.model.User;
 import egen5208.gym.model.enums.UserRole;
 import egen5208.gym.repo.UserRepo;
@@ -17,7 +23,7 @@ public class UserService {
 
     public User createUser(UserRequestDTO userRequestDTO) {
         if (userRepo.findByEmail(userRequestDTO.getEmail()).isPresent()) {
-            throw new RuntimeException("User with email " + userRequestDTO.getEmail() + " already exists");
+            throw new UserAlreadyExistsException("User with email " + userRequestDTO.getEmail() + " already exists");
         }
         User user = new User();
         user.setFirstName(userRequestDTO.getFirstName());
@@ -28,31 +34,35 @@ public class UserService {
         user.setDob(userRequestDTO.getDob());
         user.setGender(userRequestDTO.getGender());
         user.setRole(userRequestDTO.getRole());
+        user.setRegisteredAt(LocalDateTime.now());
         User savedUser = userRepo.save(user);
         return savedUser;
     }
 
-    public User updateUser(UserRequestDTO userRequestDTO) {
-        User user = userRepo.findByEmail(userRequestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found with email: " + userRequestDTO.getEmail()));
+    public User updateUser(Long id, UserUpdateDTO userUpdateDTO) {
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        if (userRequestDTO.getFirstName() != null) {
-            user.setFirstName(userRequestDTO.getFirstName());
+        if (userUpdateDTO.getFirstName() != null) {
+            user.setFirstName(userUpdateDTO.getFirstName());
         }
-        if (userRequestDTO.getLastName() != null) {
-            user.setLastName(userRequestDTO.getLastName());
+        if (userUpdateDTO.getLastName() != null) {
+            user.setLastName(userUpdateDTO.getLastName());
         }
-        if (userRequestDTO.getPhone() != null) {
-            user.setPhone(userRequestDTO.getPhone());
+        if (userUpdateDTO.getPhone() != null) {
+            user.setPhone(userUpdateDTO.getPhone());
         }
-        if (userRequestDTO.getDob() != null) {
-            user.setDob(userRequestDTO.getDob());
+        if (userUpdateDTO.getDob() != null) {
+            user.setDob(userUpdateDTO.getDob());
         }
-        if (userRequestDTO.getGender() != null) {
-            user.setGender(userRequestDTO.getGender());
+        if (userUpdateDTO.getGender() != null) {
+            user.setGender(userUpdateDTO.getGender());
         }
-        if (userRequestDTO.getRole() != null || user.getRole() != UserRole.ADMIN) {
-            throw new RuntimeException("You are not authorized to update user role");
+        if (userUpdateDTO.getRole() != null) {
+            if (user.getRole() != UserRole.ADMIN) {
+                throw new NotAdminException("You are not authorized to update user role");
+            }
+            user.setRole(userUpdateDTO.getRole());
         }
 
         return userRepo.save(user);

@@ -1,10 +1,7 @@
 package egen5208.gym.utils;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
@@ -37,10 +34,11 @@ public class JwtUtils {
         Claims claims = Jwts.parserBuilder().setSigningKey(key).build()
                 .parseClaimsJws(token).getBody();
 
-        String roles = claims.get("roles", String.class);
-        return Arrays.stream(roles.split(","))
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
+        String role = claims.get("role", String.class);
+        if (role == null || role.trim().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
     }
 
     public boolean validateJwtToken(String authToken) {
