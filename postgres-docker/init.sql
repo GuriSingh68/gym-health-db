@@ -30,15 +30,22 @@ CREATE TABLE fitness_goals (
 );
 
 CREATE TABLE health_metrics (
-                                metric_id BIGSERIAL PRIMARY KEY,
-                                member_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-                                metric_value NUMERIC(6, 2) NOT NULL,
-                                recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    metric_id BIGSERIAL PRIMARY KEY,
+    member_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    weight NUMERIC(5,2),
+    height NUMERIC(5,2),
+    heart_rate INT,
+    blood_pressure VARCHAR(20),
+    blood_sugar NUMERIC(5,2),
+    is_diabetic BOOLEAN DEFAULT FALSE,
+    allergies TEXT DEFAULT 'None',
+    medical_notes TEXT DEFAULT 'None',
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE trainers (
                           trainer_id BIGSERIAL PRIMARY KEY,
-                          user_id BIGINT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+                          user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
                           specialty VARCHAR(100),
                           bio TEXT
 );

@@ -40,6 +40,6 @@ public class User {
     @Column(nullable = false)
     private String gender;
 
-    @Column(name = "registered_at")
+    @Column(name = "registered_at", insertable = false, updatable = false)
     private LocalDateTime registeredAt;
 }

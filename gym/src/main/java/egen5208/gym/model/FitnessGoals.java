@@ -35,7 +35,7 @@ public class FitnessGoals {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private GoalStatus status; // e.g., "IN_PROGRESS", "COMPLETED"
+    private GoalStatus status;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -44,4 +44,34 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
+
+    @ExceptionHandler(UserNotfoundException.class)
+    public ResponseEntity<Map<String, String>> handleUserNotfoundException(
+            UserNotfoundException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(GoalNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleGoalNotFoundException(
+            GoalNotFoundException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
+    @ExceptionHandler(NoRecordsFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoRecordsFoundException(
+            NoRecordsFoundException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
 }
