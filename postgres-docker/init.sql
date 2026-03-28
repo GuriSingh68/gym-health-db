@@ -42,10 +42,10 @@ CREATE TABLE health_metrics (
     medical_notes TEXT DEFAULT 'None',
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
+-- assumptions: One trainer has only one user account.
 CREATE TABLE trainers (
                           trainer_id BIGSERIAL PRIMARY KEY,
-                          user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+                          user_id BIGINT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
                           specialty VARCHAR(100),
                           bio TEXT
 );
@@ -56,7 +56,10 @@ CREATE TABLE trainer_availability (
                                       available_date DATE NOT NULL,
                                       start_time TIME NOT NULL,
                                       end_time TIME NOT NULL,
-                                      CONSTRAINT chk_time_order CHECK (end_time > start_time)
+                                      is_available BOOLEAN DEFAULT TRUE,
+                                      CONSTRAINT chk_time_order CHECK (end_time > start_time),
+                                      CONSTRAINT unique_trainer_availability 
+                                      UNIQUE (trainer_id, available_date, start_time, end_time) 
 );
 
 CREATE TABLE rooms (
@@ -178,3 +181,38 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_prevent_member_overlap
     BEFORE INSERT OR UPDATE ON personal_sessions
                          FOR EACH ROW EXECUTE FUNCTION prevent_member_overlapping_sessions();
+
+CREATE OR REPLACE FUNCTION check_trainer_availability_and_overlap()
+RETURNS TRIGGER AS 
+BEGIN
+    -- 1. Check if the trainer is actually available during this day/time
+    IF NOT EXISTS (
+        SELECT 1 FROM trainer_availability
+        WHERE trainer_id = NEW.trainer_id
+          AND available_date = NEW.session_date
+          AND start_time <= NEW.start_time
+          AND end_time >= NEW.end_time
+          AND is_available = TRUE
+    ) THEN
+        RAISE EXCEPTION 'Trainer is not available during this time slot.';
+    END IF;
+
+    -- 2. Check for overlapping personal sessions for the trainer
+    IF EXISTS (
+        SELECT 1 FROM personal_sessions
+        WHERE trainer_id = NEW.trainer_id
+          AND session_date = NEW.session_date
+          AND NEW.start_time < end_time
+          AND NEW.end_time > start_time
+          AND session_id IS DISTINCT FROM NEW.session_id
+    ) THEN
+        RAISE EXCEPTION 'Trainer has another session scheduled during this time.';
+    END IF;
+
+    RETURN NEW;
+END;
+ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_trainer_availability_check
+    BEFORE INSERT OR UPDATE ON personal_sessions
+    FOR EACH ROW EXECUTE FUNCTION check_trainer_availability_and_overlap();
