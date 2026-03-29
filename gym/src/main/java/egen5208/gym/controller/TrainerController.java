@@ -3,20 +3,15 @@ package egen5208.gym.controller;
 import egen5208.gym.dto.Trainer.AvailabilityPatchRequestDTO;
 import egen5208.gym.dto.Trainer.TrainerAvailabilityRequestDTO;
 import egen5208.gym.dto.Trainer.TrainerRespnse;
-import egen5208.gym.model.Trainer;
-import egen5208.gym.model.TrainerAvailability;
-import egen5208.gym.repo.TrainerRepo;
 import egen5208.gym.service.TrainerService;
 import egen5208.gym.utils.util;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
