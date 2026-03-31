@@ -65,6 +65,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
     }
 
+    @ExceptionHandler(RoomNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleRoomNotFoundException(
+            RoomNotFoundException ex) {
+
+        Map<String, String> errors = new HashMap<>();
+        errors.put("error", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    }
+
     @ExceptionHandler(NoRecordsFoundException.class)
     public ResponseEntity<Map<String, String>> handleNoRecordsFoundException(
             NoRecordsFoundException ex) {

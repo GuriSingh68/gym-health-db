@@ -216,3 +216,37 @@ END;
 CREATE TRIGGER trg_trainer_availability_check
     BEFORE INSERT OR UPDATE ON personal_sessions
     FOR EACH ROW EXECUTE FUNCTION check_trainer_availability_and_overlap();
+
+
+-- Create Views
+create view vw_group_class_sessions
+            (activity_type, member_id, class_name, date, start_time, end_time, trainer_name, room) as
+SELECT 'Group Class'::text                                      AS activity_type,
+       cr.member_id,
+       c.name                                                   AS class_name,
+       cs.schedule_date                                         AS date,
+       cs.start_time,
+       cs.end_time,
+       (us.first_name::text || ' '::text) || us.last_name::text AS trainer_name,
+       rooms.room_number                                        AS room
+FROM class_registrations cr
+         JOIN class_schedules cs ON cr.schedule_id = cs.schedule_id
+         JOIN classes c ON cs.class_id = c.class_id
+         JOIN trainers t ON cs.trainer_id = t.trainer_id
+         JOIN users us ON t.user_id = us.user_id
+         JOIN rooms ON cs.room_id = rooms.room_id
+WHERE (cs.schedule_date + cs.start_time) >= now();
+
+
+create view vw_personal_sessions (member_id, session_date, start_time, end_time, client_name, room_number) as
+SELECT ps.member_id,
+       ps.session_date,
+       ps.start_time,
+       ps.end_time,
+       (us.first_name::text || ' '::text) || us.last_name::text AS client_name,
+       r.room_number
+FROM personal_sessions ps
+         JOIN users us ON ps.member_id = us.user_id
+         JOIN trainers t ON t.trainer_id = ps.trainer_id
+         JOIN rooms r ON r.room_id = ps.room_id;
+
