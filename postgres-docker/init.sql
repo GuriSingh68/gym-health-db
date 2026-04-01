@@ -69,10 +69,20 @@ CREATE TABLE rooms (
 );
 
 CREATE TABLE equipment (
-                           equipment_id BIGSERIAL PRIMARY KEY,
-                           room_id BIGINT REFERENCES rooms(room_id) ON DELETE SET NULL,
-                           name VARCHAR(100) NOT NULL,
-                           last_maintenance_date DATE
+    equipment_id BIGSERIAL PRIMARY KEY,
+    room_id BIGINT REFERENCES rooms(room_id) ON DELETE SET NULL,
+    name VARCHAR(100) NOT NULL,
+    status VARCHAR(30) DEFAULT 'operational', 
+    last_maintenance_date DATE,
+    next_maintenance_date DATE 
+);
+CREATE TABLE maintenance_logs (
+    log_id BIGSERIAL PRIMARY KEY,
+    equipment_id BIGINT REFERENCES equipment(equipment_id) ON DELETE CASCADE,
+    issue_description TEXT NOT NULL,
+    reported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP,
+    technician_notes TEXT
 );
 
 CREATE TABLE classes (
@@ -124,9 +134,14 @@ CREATE TABLE billings (
 -- 2. INDEXES
 -- ==========================================
 
-CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_health_metrics_member ON health_metrics(member_id);
+
 CREATE INDEX idx_class_schedules_date ON class_schedules(schedule_date);
+CREATE INDEX idx_personal_sessions_date ON personal_sessions(session_date);
+CREATE INDEX idx_personal_sessions_start_time ON personal_sessions(start_time);
+CREATE INDEX idx_personal_sessions_end_time ON personal_sessions(end_time);
+CREATE INDEX idx_personal_sessions_room ON personal_sessions(room_id);
+
+
 
 -- ==========================================
 -- 3. TRIGGERS
@@ -183,7 +198,7 @@ CREATE TRIGGER trg_prevent_member_overlap
                          FOR EACH ROW EXECUTE FUNCTION prevent_member_overlapping_sessions();
 
 CREATE OR REPLACE FUNCTION check_trainer_availability_and_overlap()
-RETURNS TRIGGER AS 
+RETURNS TRIGGER AS $$
 BEGIN
     -- 1. Check if the trainer is actually available during this day/time
     IF NOT EXISTS (
@@ -211,7 +226,7 @@ BEGIN
 
     RETURN NEW;
 END;
- LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE TRIGGER trg_trainer_availability_check
     BEFORE INSERT OR UPDATE ON personal_sessions
@@ -219,8 +234,8 @@ CREATE TRIGGER trg_trainer_availability_check
 
 
 -- Create Views
-create view vw_group_class_sessions
-            (activity_type, member_id, class_name, date, start_time, end_time, trainer_name, room) as
+CREATE VIEW vw_group_class_sessions
+            (activity_type, member_id, class_name, date, start_time, end_time, trainer_name, room) AS
 SELECT 'Group Class'::text                                      AS activity_type,
        cr.member_id,
        c.name                                                   AS class_name,
@@ -238,7 +253,7 @@ FROM class_registrations cr
 WHERE (cs.schedule_date + cs.start_time) >= now();
 
 
-create view vw_personal_sessions (member_id, session_date, start_time, end_time, client_name, room_number) as
+CREATE VIEW vw_personal_sessions (member_id, session_date, start_time, end_time, client_name, room_number) AS
 SELECT ps.member_id,
        ps.session_date,
        ps.start_time,
