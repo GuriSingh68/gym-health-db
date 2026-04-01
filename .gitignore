@@ -1,1 +1,2 @@
-gym/src/main/java/egen5208/gym/controller/FitnessController.java
+*.yaml
+*application.properties
