@@ -1,5 +1,7 @@
 package egen5208.gym.service;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -69,7 +71,7 @@ public class RoomBookingService {
                         return response;
                 }
 
-                Room room = roomRepo.findById(roomBookingDTO.getTargetRoomId())
+                Room room = roomRepo.findById(roomBookingDTO.getCurrentRoomId())
                                 .orElseThrow(() -> new RoomNotFoundException("Target room doesn't exist."));
                 if (roomBookingDTO.getScheduleId() != null) {
                         ClassSchedule cs = classScheduleRepo.findById(roomBookingDTO.getScheduleId())
@@ -82,4 +84,5 @@ public class RoomBookingService {
                 response.setMessage("Room " + room.getRoomId() + " successfully assigned to class schedule.");
                 return response;
         }
+
 }

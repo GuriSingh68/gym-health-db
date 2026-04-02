@@ -17,7 +17,6 @@ public interface PersonalSessionRepository extends JpaRepository<User, Long> {
       SELECT *
       FROM vw_personal_sessions
       WHERE member_id = :memberId
-        AND session_date >= CURRENT_DATE
       ORDER BY session_date, start_time
       """, nativeQuery = true)
   List<PersonalSessionView> getPersonalSessions(@Param("memberId") Long memberId);

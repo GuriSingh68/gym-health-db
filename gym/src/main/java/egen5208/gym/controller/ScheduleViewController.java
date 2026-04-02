@@ -21,14 +21,14 @@ public class ScheduleViewController {
     private final ScheduleViewService scheduleViewService;
 
     @GetMapping("/personalSession")
-    @PreAuthorize("hasAnyRole('TRAINER','ADMIN')")
+    @PreAuthorize("hasAnyRole('TRAINER','ADMIN','MEMBER')")
     public ResponseEntity<List<PersonalSessionView>> getAllSchedule() {
         String email = util.getEmail();
         return ResponseEntity.ok(scheduleViewService.getPersonalSchedule(email));
     }
 
     @GetMapping("/groupSession")
-    @PreAuthorize("hasAnyRole('TRAINER','ADMIN')")
+    @PreAuthorize("hasAnyRole('TRAINER','ADMIN','MEMBER')")
     public ResponseEntity<List<GroupClassSessionView>> getAllGroupSchedule() {
         String email = util.getEmail();
         return ResponseEntity.ok(scheduleViewService.getGroupSchedule(email));

@@ -2,6 +2,7 @@ package egen5208.gym.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +12,8 @@ import egen5208.gym.dto.RoomBooking.RoomBookingDTO;
 import egen5208.gym.dto.RoomBooking.RoomBookingResponseDTO;
 import egen5208.gym.service.RoomBookingService;
 import lombok.AllArgsConstructor;
+import java.util.List;
+import egen5208.gym.model.Room;
 
 @RestController
 @RequestMapping("/api/room")
@@ -31,4 +34,5 @@ public class RoomAssignController {
         RoomBookingResponseDTO response = roomBookingService.bookRoomClass(dto);
         return ResponseEntity.ok(response.getMessage());
     }
+
 }

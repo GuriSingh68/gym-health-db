@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import egen5208.gym.dto.Trainer.AvailabilityPatchRequestDTO;
 import egen5208.gym.dto.Trainer.TrainerAvailabilityRequestDTO;
 import egen5208.gym.dto.Trainer.TrainerRespnse;
+import egen5208.gym.exception.TimeException;
 import egen5208.gym.exception.UserNotfoundException;
 import egen5208.gym.model.Trainer;
 import egen5208.gym.model.TrainerAvailability;
@@ -39,12 +40,16 @@ public class TrainerService {
                                         .orElseThrow(() -> new UserNotfoundException(
                                                         "Trainer record not found for user: " + email));
                 }
-
+                LocalTime startTime = LocalTime.parse(availability.getStartTime());
+                LocalTime endTime = LocalTime.parse(availability.getEndTime());
+                if (endTime.isBefore(startTime)) {
+                        throw new TimeException("Start time must be before end time");
+                }
                 TrainerAvailability trainerAvailability = new TrainerAvailability();
                 trainerAvailability.setTrainer(trainer);
                 trainerAvailability.setAvailableDate(LocalDate.parse(availability.getAvailableDate()));
-                trainerAvailability.setStartTime(LocalTime.parse(availability.getStartTime()));
-                trainerAvailability.setEndTime(LocalTime.parse(availability.getEndTime()));
+                trainerAvailability.setStartTime(startTime);
+                trainerAvailability.setEndTime(endTime);
                 trainerAvailability.setAvailable(true);
 
                 TrainerAvailability saved = trainerAvailabilityRepo.save(trainerAvailability);
@@ -64,11 +69,16 @@ public class TrainerService {
                 if (availability.getAvailableDate() != null) {
                         trainerAvailability.setAvailableDate(availability.getAvailableDate());
                 }
+                LocalTime startTime = LocalTime.parse(availability.getStartTime());
+                LocalTime endTime = LocalTime.parse(availability.getEndTime());
+                if (endTime.isBefore(startTime)) {
+                        throw new TimeException("Start time must be before end time");
+                }
                 if (availability.getStartTime() != null) {
-                        trainerAvailability.setStartTime(availability.getStartTime());
+                        trainerAvailability.setStartTime(startTime);
                 }
                 if (availability.getEndTime() != null) {
-                        trainerAvailability.setEndTime(availability.getEndTime());
+                        trainerAvailability.setEndTime(endTime);
                 }
                 if (availability.getIsAvailable() != null) {
                         trainerAvailability.setAvailable(availability.getIsAvailable());

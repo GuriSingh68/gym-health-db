@@ -34,7 +34,6 @@ public interface HealthMetricRepo extends JpaRepository<HealthMetric, Long> {
                 ORDER BY recorded_at DESC
                 LIMIT 1
             ) AS lh ON fg.member_id = lh.member_id
-            WHERE fg.status = 'IN_PROGRESS'
             """, nativeQuery = true)
     List<MemberDashboardDTO> getDashboardData(Long memberId);
 
