@@ -66,23 +66,31 @@ public class TrainerService {
         public TrainerRespnse updateAvailability(Long availabilityId, AvailabilityPatchRequestDTO availability) {
                 TrainerAvailability trainerAvailability = trainerAvailabilityRepo.findById(availabilityId)
                                 .orElseThrow(() -> new UserNotfoundException("Availability not found"));
+
                 if (availability.getAvailableDate() != null) {
-                        trainerAvailability.setAvailableDate(availability.getAvailableDate());
+                        trainerAvailability.setAvailableDate(LocalDate.parse(availability.getAvailableDate()));
                 }
-                LocalTime startTime = LocalTime.parse(availability.getStartTime());
-                LocalTime endTime = LocalTime.parse(availability.getEndTime());
-                if (endTime.isBefore(startTime)) {
+
+                LocalTime startTime = availability.getStartTime() != null
+                                ? LocalTime.parse(availability.getStartTime())
+                                : null;
+                LocalTime endTime = availability.getEndTime() != null
+                                ? LocalTime.parse(availability.getEndTime())
+                                : null;
+                if (startTime != null && endTime != null && endTime.isBefore(startTime)) {
                         throw new TimeException("Start time must be before end time");
                 }
-                if (availability.getStartTime() != null) {
+
+                if (startTime != null) {
                         trainerAvailability.setStartTime(startTime);
                 }
-                if (availability.getEndTime() != null) {
+                if (endTime != null) {
                         trainerAvailability.setEndTime(endTime);
                 }
                 if (availability.getIsAvailable() != null) {
                         trainerAvailability.setAvailable(availability.getIsAvailable());
                 }
+
                 TrainerAvailability saved = trainerAvailabilityRepo.save(trainerAvailability);
                 return new TrainerRespnse(
                                 saved.getAvailabilityId(),
